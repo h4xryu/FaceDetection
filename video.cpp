@@ -3,13 +3,16 @@
 #include <string>
 
 cv::Mat frame;
+// ROI지정 frame
+cv::Mat subframe;
+cv::Ptr<cv::BackgroundSubtractor> pMOG2;
 
 bool selecting_roi = false;
 cv::Rect roi_rect; // 선택한 ROI의 좌표를 저장할 변수
 
 /////////////////////////////////////////////////////////////// ROI좌표값이 -로 설정되게 되면 에러 발생
 
-////// ROI 설정 후 객체감지를 한 다음 객체감지 사각형의 좌표가 ROI 시작 좌표 - 끝 좌표 인걸로 추정됨.
+////////////////////////////////// ROI지정을 기준으로 배경복사 이후 ROI부분만 컬러화 후 객체탐지 or 마스크한 영상에서 탐지
 
 // 마우스 이벤트 처리
 void mouse_callback(int event, int x, int y, int flags, void* userdata)
@@ -79,6 +82,7 @@ std::vector<cv::Rect> eye_detectObjects(const cv::Mat& image, const cv::Rect& ro
 
 int main() {
     cv::VideoCapture cap(0, cv::CAP_V4L2); // 웹캠 연결, VideoLinux2캡처 백엔드 사용
+
     if (!cap.isOpened()) {
         std::cerr << "웹캠 연결 상태를 확인해주세요." << std::endl;
         return -1;
@@ -88,13 +92,17 @@ int main() {
     int eye_detect_counting = 0;
     int count_frame = 0;
     
-    cv::namedWindow("ROI"); // 창 이름을 ROI로 설정
-    cv::setMouseCallback("ROI", mouse_callback); // ROI 창에 마우스 콜백 함수 등록
+    cv::namedWindow("frame"); // 창 이름 설정
+    cv::setMouseCallback("frame", mouse_callback); // ""창 마우스 콜백 함수 등록
+
+    pMOG2 = cv::createBackgroundSubtractorMOG2();
 
     while (true) {
-        count_frame += 1;
-        cap >> frame; // 웹캠에서 프레임 읽기
+        count_frame += 1;   // 디버깅코드
+        cap >> frame;   // 웹 캠에서 프레임 읽기
 
+        pMOG2->apply(frame, subframe);
+        
         // ROI 선택 중이면 사각형 그리기
         if (selecting_roi) {
             cv::rectangle(frame, roi_rect, cv::Scalar(0, 255, 0), 2);
@@ -146,8 +154,9 @@ int main() {
             }
         }
         // 실시간 화면
-        cv::imshow("ROI", frame);
-
+        cv::imshow("frame", frame);
+        cv::imshow("subframe", subframe);
+       
         // 아스키코드값(27 == ESC) 입력으로 종료
         if (cv::waitKey(1) == 27) {
             break;
