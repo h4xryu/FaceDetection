@@ -1,6 +1,9 @@
 #include <opencv2/opencv.hpp>
 #include <iostream>
 #include <string>
+#include <OpenXLSX/OpenXLSX.hpp>
+// 딜레이 함수 포함 헤더
+#include <unistd.h>
 
 cv::Mat frame;
 // ROI지정 frame
@@ -9,7 +12,7 @@ cv::Ptr<cv::BackgroundSubtractor> pMOG2;
 
 bool selecting_roi = false;
 cv::Rect roi_rect; // 선택한 ROI의 좌표를 저장할 변수
-
+ 
 /////////////////////////////////////////////////////////////// ROI좌표값이 -로 설정되게 되면 에러 발생
 
 ////////////////////////////////// ROI지정을 기준으로 배경복사 이후 ROI부분만 컬러화 후 객체탐지 or 마스크한 영상에서 탐지
@@ -95,7 +98,7 @@ int main() {
     cv::namedWindow("frame"); // 창 이름 설정
     cv::setMouseCallback("frame", mouse_callback); // ""창 마우스 콜백 함수 등록
 
-    pMOG2 = cv::createBackgroundSubtractorMOG2();
+    pMOG2 = cv::createBackgroundSubtractorMOG2(1000, 20);
 
     while (true) {
         count_frame += 1;   // 디버깅코드
@@ -156,7 +159,7 @@ int main() {
         // 실시간 화면
         cv::imshow("frame", frame);
         cv::imshow("subframe", subframe);
-       
+
         // 아스키코드값(27 == ESC) 입력으로 종료
         if (cv::waitKey(1) == 27) {
             break;

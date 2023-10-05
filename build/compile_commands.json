@@ -1,0 +1,7 @@
+[
+{
+  "directory": "/home/cdm/Desktop/test/video_test/build",
+  "command": "/usr/bin/g++  -isystem /usr/local/include/opencv4 -g -o CMakeFiles/video_test.dir/video.cpp.o -c /home/cdm/Desktop/test/video_test/video.cpp",
+  "file": "/home/cdm/Desktop/test/video_test/video.cpp"
+}
+]
