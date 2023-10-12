@@ -1,6 +1,51 @@
+//////////// 배경검출 분포도 qt그리기
+//////////////// 일정 프레임 text 2개 1개 쓰고 1개는 (10fps 단위) 저장
+/////////////// qt queue에 (10fps) 읽고 쓰기
 #include <opencv2/opencv.hpp>
 #include <iostream>
 #include <string>
+#include <fstream>
+
+//QT에 보낼때 3프레임 마다 file.close() -> 내용 쓰기 -> write_file()
+//file은 닫을시에 저장됨, file은 글로벌로 선언
+//
+
+std::ofstream file;
+bool is_file_opened = false;
+
+
+void read_file(std::ofstream &file){
+    // text파일에 해당 프레임 및 object_size 적기
+
+
+    if (!file){
+        exit(100);
+    } else{
+        file.open("object_size", std::ios_base::out);
+        is_file_opened = true;   
+    }
+
+}
+
+/*
+void write_file(std::ofstream &file){
+    if (is_file_opened){
+        file.close();
+    } else if (file.open()) {
+        
+        file << current_frame <<" Frame " << "Object_Size : " << object_size << std::endl;
+        
+    }
+}
+*/
+
+void close_file(std::ofstream &file){
+    if (is_file_opened){
+        is_file_opened = false;
+    }
+    
+}
+
 
 cv::Mat frame;
 cv::Mat subframe;
@@ -27,6 +72,7 @@ void onTrackbarSlide(int pos, void* userdata) {
 
 // fgmask(subframe) = 전경 마스크 영상
 void detectAndDrawObjects(cv::Mat& subframe, cv::Mat& frame) {
+
     // 객체 벡터 초기화
     detected_objects.clear();
 
@@ -47,9 +93,14 @@ void detectAndDrawObjects(cv::Mat& subframe, cv::Mat& frame) {
             std::cout << "[" << current_frame << "] frame 객체 크기 : " << object_size << " (Width: " << object_rect.width << ", Height: " << object_rect.height << ")" << std::endl;
         
         // 특정 크기 이상의 객체만 고려
-        if (object_size > 1000) {
+        if (object_size > 1000 && file.is_open()) {
             detected_objects.emplace_back(object_rect);
             cv::rectangle(frame, object_rect, cv::Scalar(0, 0, 255), 2);
+
+            int current_row = current_frame + 2;
+            
+            file << current_frame <<" Frame " << "Object_Size : " << object_size << std::endl;
+
         }
 
         // 현재 프레임 번호 출력(디버깅)
@@ -59,25 +110,10 @@ void detectAndDrawObjects(cv::Mat& subframe, cv::Mat& frame) {
     cv::threshold(subframe, subframe, 127, 255, cv::THRESH_BINARY);
 }
 
-// HOG 객체 검출
-void detectAndDrawObjectsHOG(cv::Mat& frame, cv::HOGDescriptor& hog) {
-    std::vector<cv::Rect> fullbody;
-    std::vector<double> weights; // 검출된 객체의 가중치
-    hog.detectMultiScale(frame, fullbody, weights, 0, cv::Size(8, 8), cv::Size(32, 32), 1.05, 2);
-
-    for (size_t i = 0; i < fullbody.size(); i++) {
-        cv::Rect person = fullbody[i];
-        double weight = weights[i];
-
-        // 일정 가중치 이상인 객체만 그리기
-        if (weight >= 0) {
-            cv::rectangle(frame, person, cv::Scalar(255, 0, 0), 2);
-        }
-    }
-}
-
 
 int main() {
+
+    read_file(file);
     if (!cap.isOpened()) {
         std::cerr << "웹캠 연결 상태를 확인해주세요." << std::endl;
         return -1;
@@ -90,11 +126,6 @@ int main() {
 
     // 히스토리 길이, 임계값, 그림자 검출 여부(배경 제거 객체)
     pMOG2 = cv::createBackgroundSubtractorMOG2(500, 16, true);
-
-
-    // HOG 객체 검출기 초기화
-    cv::HOGDescriptor hog;
-    hog.setSVMDetector(cv::HOGDescriptor::getDefaultPeopleDetector());
 
     // 전신 검출용 Haar Cascade 분류기 초기화
     cv::CascadeClassifier fullbody_cascade;
@@ -136,14 +167,11 @@ int main() {
             for (const auto& person : fullbody) {
                 cv::rectangle(frame, person, cv::Scalar(0, 255, 0), 2);
             }
-
-            // HOG 객체 검출
-            detectAndDrawObjectsHOG(frame, hog);
-            
         }
 
         cv::imshow("frame", frame);
         cv::imshow("subframe", subframe);
+
     }
 
     cap.release();

@@ -1142,6 +1142,18 @@
 			"value" : "/usr/local/lib/cmake/opencv4"
 		},
 		{
+			"name" : "OpenXLSX_DIR",
+			"properties" : 
+			[
+				{
+					"name" : "HELPSTRING",
+					"value" : "The directory containing a CMake configuration file for OpenXLSX."
+				}
+			],
+			"type" : "PATH",
+			"value" : "/usr/local/lib/cmake/OpenXLSX"
+		},
+		{
 			"name" : "video_test_BINARY_DIR",
 			"properties" : 
 			[
