@@ -40,7 +40,7 @@ void MainWindow::updateGraph()
     int objectSize = queue.dequeue();
 
     ui->customPlot->graph(0)->addData(frameProcessed, objectSize);
-    ui->customPlot->xAxis->setRange(frameProcessed, 20, Qt::AlignRight); // x축 0~20
+    ui->customPlot->xAxis->setRange(frameProcessed, 100, Qt::AlignRight); // x축 0~100
     ui->customPlot->xAxis->moveRange(1);
     ui->customPlot->replot();
     }
@@ -61,6 +61,6 @@ MainWindow::~MainWindow()
 {
     delete ui;
     delete DataTimer;
-    delete file;
+    // delete file;
     delete in;
 }

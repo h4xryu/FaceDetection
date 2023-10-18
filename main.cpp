@@ -7,7 +7,10 @@
 cv::Mat frame;
 cv::Mat subframe;
 // 예제 비디오 파일
-cv::VideoCapture cap("/home/cdm/Desktop/qt/qt_test/RealTimeGraph/vtest.avi");
+// cv::VideoCapture cap("/home/cdm/Desktop/qt/qt_test/RealTimeGraph/vtest.avi");
+// 웹캠
+cv::VideoCapture cap(0, cv::CAP_V4L2);
+
 // MOG2 알고리즘
 cv::Ptr<cv::BackgroundSubtractorMOG2> pMOG2;
 
@@ -69,8 +72,11 @@ void detectAndDrawObjects(cv::Mat& subframe, cv::Mat& frame) {
         cv::putText(frame, "Frame : " + std::to_string(current_frame), cv::Point(10, 30), cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(255, 0, 0), 2);
     }
 
-    if(queue.isEmpty())
+    if(queue.isEmpty()){
         std::cout << "queue is empty by main.cpp" << std::endl;
+        queue.enqueue(current_frame);   // 현재 프레임
+        queue.enqueue(sum_object_size); // 현재 프레임의 객체 총합
+    }
     else{
         queue.enqueue(current_frame);   // 현재 프레임
         queue.enqueue(sum_object_size); // 현재 프레임의 객체 총합
@@ -96,7 +102,7 @@ int main(int argc, char *argv[])
     int count_frame = static_cast<int>(cap.get(cv::CAP_PROP_FRAME_COUNT));
 
     cv::namedWindow("frame");
-    cv::createTrackbar("Frame", "frame", &current_frame, count_frame - 1, onTrackbarSlide);
+    // cv::createTrackbar("Frame", "frame", &current_frame, count_frame - 1, onTrackbarSlide);
 
     // 히스토리 길이, 임계값, 그림자 검출 여부(배경 제거 객체)
     pMOG2 = cv::createBackgroundSubtractorMOG2(500, 16, true);
@@ -121,7 +127,7 @@ int main(int argc, char *argv[])
             current_frame++;
 
             if (frame.empty()) {
-                std::cout << "비디오 파일 끝." << std::endl;
+                std::cout << "파일 끝." << std::endl;
                 is_playing = false;
                 break;
             }
