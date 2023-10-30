@@ -3,9 +3,6 @@
 #include <QString>
 #include <QDebug>
 
-//cv::Mat frame;
-//cv::Mat subframe;
-// 예제 비디오 파일
 // cv::VideoCapture cap("/home/cdm/Desktop/qt/qt_test/RealTimeGraph/vtest.avi");
 //// 웹캠
 //cv::VideoCapture cap(0, cv::CAP_V4L2);
@@ -69,19 +66,28 @@ int main(int argc, char *argv[])
     qRegisterMetaType<cv::Mat>("cv::Mat&");
 
     QApplication a(argc, argv);
+    std::cout << "main Thread: " <<QThread::currentThread() <<std::endl;
 
     MainWindow w;
     w.show();
+
     VideoThread video;
     ProcessingThread processing;
-
-    // 시그널과 슬롯 연결
-    QObject::connect(&video, &VideoThread::Frame_Ready, &processing, &ProcessingThread::ProcessFrame);
-    QObject::connect(&processing, &ProcessingThread::ProcessingResult, &w, &MainWindow::showFrame);
-    QObject::connect(&processing, &ProcessingThread::ObjSizeResult, &w, &MainWindow::updateGraph);
+    //QThread processingThread;
 
     // 쓰레드 시작
     video.start();
+    // 시그널과 슬롯 연결
+    QObject::connect(&video, &VideoThread::Frame_Ready, &processing, &ProcessingThread::setFrame);
+    QObject::connect(&processing, &ProcessingThread::ProcessingResult, &w, &MainWindow::showFrame);
+    QObject::connect(&processing, &ProcessingThread::ObjSizeResult, &w, &MainWindow::updateGraph);
+
+    // `ProcessingThread` 객체를 `processingThread`로 이동
+    //processing.moveToThread(&processingThread);
+
+    // `processingThread` 시작
+    //processingThread.start();
+
     processing.start();
 
     video.quit();

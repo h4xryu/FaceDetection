@@ -20,7 +20,7 @@
       <x>580</x>
       <y>10</y>
       <width>681</width>
-      <height>581</height>
+      <height>601</height>
      </rect>
     </property>
     <property name="maximumSize">
@@ -30,12 +30,12 @@
      </size>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButton_Start_2">
+   <widget class="QPushButton" name="pushButton_Start">
     <property name="geometry">
      <rect>
       <x>580</x>
-      <y>600</y>
-      <width>361</width>
+      <y>620</y>
+      <width>331</width>
       <height>25</height>
      </rect>
     </property>
@@ -43,12 +43,12 @@
      <string>START</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButton_Stop_2">
+   <widget class="QPushButton" name="pushButton_Stop">
     <property name="geometry">
      <rect>
-      <x>950</x>
-      <y>600</y>
-      <width>231</width>
+      <x>920</x>
+      <y>620</y>
+      <width>341</width>
       <height>25</height>
      </rect>
     </property>

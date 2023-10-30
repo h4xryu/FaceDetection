@@ -1,19 +1,22 @@
 #include "mainwindow.h"
 #include "main.cpp"
 
-
-void VideoThread::pause(){  // 읽기 쓰레드 일시정지
+void VideoThread::pause() {
+    QMutexLocker locker(&mutex);
     video_pause = true;
 }
 
-void VideoThread::resume(){ // 읽기 쓰레드 재시작
+void VideoThread::resume() {
+    QMutexLocker locker(&mutex);
     video_pause = false;
     video_pauseCondition.wakeAll();
 }
 
-void VideoThread::stop(){   // 읽기 쓰레드 멈춤
+void VideoThread::stop() {
+    QMutexLocker locker(&mutex);
     video_stop = true;
 }
+
 void VideoThread::run() {   // 읽기 쓰레드 실행
     qDebug("VideoThread : start");
 
@@ -35,24 +38,37 @@ void VideoThread::run() {   // 읽기 쓰레드 실행
         cap >> frame; // frame에 영상 담기
 
         emit Frame_Ready(frame); // frameReady 시그널을 발생시켜 영상 프레임을 전달
-        VideoThread::msleep(30);
-
+        VideoThread::msleep(100);
+        std::cout<<"VideoThread: " << QThread::currentThread() << std::endl;
     }
 
     // 영상 읽기가 끝나면 리소스 해제
     cap.release();
 }
 
-void ProcessingThread::ProcessFrame(cv::Mat &frame) {
+void ProcessingThread::setFrame(cv::Mat &frame) {
+    if(frame.empty()){
+        ProcessingThread::msleep(100);
+        std::cout <<"1111111111111111111111111111" <<std::endl;
+    }
+    else{
+    // 프레임 설정
+    Temp_frame = frame;
+    std::cout <<"999999999999999999999999" <<std::endl;
+    }
+}
+
+void ProcessingThread::run() {
     qDebug("ProcessingThread : start");
 
-    cv::Size s = frame.size();
+    cv::Size s = Temp_frame.size();
     int rows = s.height;
     int cols = s.width;
 
     if (!(rows > 0 && cols > 0)) {
-        std::cout << "frame is empty by thread.cpp" << std::endl;
-        return;
+        std::cout << "frame is empty by thread.cpp ProcessingThread run()" << std::endl;
+        emit setFrame(Temp_frame);
+        return run();
     }
 
     cv::Mat subframe;
@@ -63,22 +79,18 @@ void ProcessingThread::ProcessFrame(cv::Mat &frame) {
     // 시간 측정
     cv::TickMeter time;
 
-//    cv::namedWindow("frame");
-
     // 히스토리 길이, 임계값, 그림자 검출 여부(배경 제거 객체)
-    pMOG2 = cv::createBackgroundSubtractorMOG2(500, 16, true);
+    pMOG2 = cv::createBackgroundSubtractorMOG2(1000, 16, true);
 
-    while (!frame.empty()) {
+    while (!Temp_frame.empty()) {
         // 시간 측정
         time.start();
 
         if(processedFrames >= framesToProcess){
             std::cout <<"쓰레드 대기" << std::endl;
-            ProcessingThread::msleep(100);  // 0.1초 대기
+            ProcessingThread::msleep(100);  // 대기
             processedFrames = 0; // 처리한 프레임 초기화
         }
-
-        QMutexLocker locker(&mutex); // Mutex를 사용하여 이미지에 대한 접근을 동기화
 
         if (!is_playing) {
             break;
@@ -89,21 +101,18 @@ void ProcessingThread::ProcessFrame(cv::Mat &frame) {
 
         if(is_playing){
             // frame에 MOG2 적용 후 subframe 출력
-            pMOG2->apply(frame, subframe);
+            pMOG2->apply(Temp_frame, subframe);
 
             // fgmask(subframe)에서 객체 검출
-            int objsize = detectAndDrawObjects(subframe, frame);
+            int objsize = detectAndDrawObjects(subframe, Temp_frame);
 
             // 프레임, subframe, fps의 객체 크기 총합을 시그널로 전달
-            emit ProcessingResult(frame, subframe);
+            emit ProcessingResult(Temp_frame, subframe);
             emit ObjSizeResult(objsize);
 
             processedFrames++;
-            locker.unlock(); // Mutex 해제
+            std::cout<<"ProcessThread: " << QThread::currentThread() << std::endl;
         }
-
-//        cv::imshow("frame", frame);
-//        cv::imshow("subframe", subframe);
 
         // 1루프 시간 출력
         time.stop();
@@ -111,7 +120,4 @@ void ProcessingThread::ProcessFrame(cv::Mat &frame) {
         time.reset();
     }
 
-     //cv::destroyAllWindows();
 }
-
-
