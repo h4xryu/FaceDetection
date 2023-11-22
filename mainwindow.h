@@ -24,7 +24,6 @@ class MainWindow : public QMainWindow
 
 public:
     explicit MainWindow(QWidget *parent = 0);
-    bool is_playing = true; // 웹캠 동작 중
     ~MainWindow();
 
 public slots:
@@ -38,10 +37,6 @@ private slots:
 private:
     Ui::MainWindow *ui;
     QTimer* DataTimer;
-    int linesProcessed; // 처리 중인 라인
-    int frameProcessed;  // 처리 중인 프레임
-    int objsize;
-
     void setupGraph();
 };
 
@@ -85,9 +80,6 @@ private:
     bool is_playing = true;
     cv::Mat Temp_frame;
 public:
-//    ProcessingThread(QObject *parent = nullptr)
-//        : QThread(parent), processing_stop(false), is_playing(true) {}
-//    ~ProcessingThread() {}
     void run();
 };
 

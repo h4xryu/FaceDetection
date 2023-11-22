@@ -40,6 +40,7 @@ void VideoThread::run() {   // 읽기 쓰레드 실행
         emit Frame_Ready(frame); // frameReady 시그널을 발생시켜 영상 프레임을 전달
         VideoThread::msleep(100);
         std::cout<<"VideoThread: " << QThread::currentThread() << std::endl;
+
     }
 
     // 영상 읽기가 끝나면 리소스 해제
@@ -49,12 +50,11 @@ void VideoThread::run() {   // 읽기 쓰레드 실행
 void ProcessingThread::setFrame(cv::Mat &frame) {
     if(frame.empty()){
         ProcessingThread::msleep(100);
-        std::cout <<"1111111111111111111111111111" <<std::endl;
     }
     else{
     // 프레임 설정
     Temp_frame = frame;
-    std::cout <<"999999999999999999999999" <<std::endl;
+
     }
 }
 

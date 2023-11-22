@@ -31,7 +31,7 @@ int detectAndDrawObjects(cv::Mat& subframe, cv::Mat& frame) {
     // 외곽 기반 객체 검출
     for (const auto& contour : contours) {
         // 객체 박스처리
-        cv::Rect object_rect = cv::boundingRect(contour);
+        cv::Rect object_rect = cv::boundingRect(contour);       // 외곽선이 검출된 가장 작은 사각형
 
         int object_size = object_rect.width * object_rect.height;
 
@@ -40,7 +40,7 @@ int detectAndDrawObjects(cv::Mat& subframe, cv::Mat& frame) {
             std::cout << "[" << current_frame << "] frame 객체 크기 : " << object_size << " (Width: " << object_rect.width << ", Height: " << object_rect.height << ")" << std::endl;
 
         // 특정 크기 이상의 객체만 고려
-        if (object_size > 1000) {
+        if (object_size > 70000) {
             detected_objects.emplace_back(object_rect);
             cv::rectangle(frame, object_rect, cv::Scalar(0, 0, 255), 2);
 
@@ -81,12 +81,6 @@ int main(int argc, char *argv[])
     QObject::connect(&video, &VideoThread::Frame_Ready, &processing, &ProcessingThread::setFrame);
     QObject::connect(&processing, &ProcessingThread::ProcessingResult, &w, &MainWindow::showFrame);
     QObject::connect(&processing, &ProcessingThread::ObjSizeResult, &w, &MainWindow::updateGraph);
-
-    // `ProcessingThread` 객체를 `processingThread`로 이동
-    //processing.moveToThread(&processingThread);
-
-    // `processingThread` 시작
-    //processingThread.start();
 
     processing.start();
 

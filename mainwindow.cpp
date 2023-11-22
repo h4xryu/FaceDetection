@@ -68,14 +68,12 @@ void MainWindow::showFrame(cv::Mat &frame, cv::Mat &subframe) {
 
 void MainWindow::on_pushButton_Start_clicked()
 {
-    // DataTimer->start(100);   // data가 시간일 때때
-    is_playing = true;
+    // 다른 쓰레드 videoThread, ProcessingThread 재시작
 }
 
 void MainWindow::on_pushButton_Stop_clicked()
 {
-    // DataTimer->stop();
-    is_playing = false;
+    // 다른 쓰레드 videoThread, ProcessingThread 중지
 }
 
 MainWindow::~MainWindow()
