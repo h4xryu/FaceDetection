@@ -66,15 +66,15 @@ void MainWindow::showFrame(cv::Mat &frame, cv::Mat &subframe) {
 
 }
 
-void MainWindow::on_pushButton_Start_clicked()
-{
-    // 다른 쓰레드 videoThread, ProcessingThread 재시작
-}
+//void MainWindow::on_pushButton_Start_clicked()
+//{
+//    // 다른 쓰레드 videoThread, ProcessingThread 재시작
+//}
 
-void MainWindow::on_pushButton_Stop_clicked()
-{
-    // 다른 쓰레드 videoThread, ProcessingThread 중지
-}
+//void MainWindow::on_pushButton_Stop_clicked()
+//{
+//    // 다른 쓰레드 videoThread, ProcessingThread 중지
+//}
 
 MainWindow::~MainWindow()
 {
